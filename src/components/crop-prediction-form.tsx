@@ -1,8 +1,7 @@
 // src/components/crop-prediction-form.tsx
 "use client";
 
-import { useFormState } from "react-dom";
-import { useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { handlePredictCrop, type FormState } from "@/app/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SubmitButton } from "@/components/submit-button";
 import { PredictionResultCard } from "@/components/prediction-result-card";
-import { AlertCircle, Droplets, Leaf, Sun, Thermometer, TestTube, CloudRain } from "lucide-react";
+import { AlertCircle, Droplets, Leaf, Sun, Thermometer, TestTube, CloudRain, Loader2 } from "lucide-react"; // Added Loader2
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -20,7 +19,7 @@ const initialFormState: FormState = {
 };
 
 export function CropPredictionForm() {
-  const [formState, formAction] = useFormState(handlePredictCrop, initialFormState);
+  const [formState, formAction, isPending] = useActionState(handlePredictCrop, initialFormState); // Updated hook and added isPending
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
   const [showResult, setShowResult] = useState(false);
@@ -44,7 +43,7 @@ export function CropPredictionForm() {
     }
   }, [formState, toast]);
 
-   const renderFieldError = (fieldName: keyof FormState["fields"]) => {
+   const renderFieldError = (fieldName: keyof NonNullable<FormState["fields"]>) => { // Made fields explicitly non-nullable for lookup
      if (formState.fields?.[fieldName]) {
        return <p className="text-xs text-destructive mt-1">{formState.fields[fieldName]}</p>;
      }
@@ -130,7 +129,8 @@ export function CropPredictionForm() {
 
           </CardContent>
           <CardFooter className="flex justify-end">
-            <SubmitButton className="bg-primary hover:bg-primary/90 text-primary-foreground">
+            {/* Pass isPending to SubmitButton */}
+            <SubmitButton className="bg-primary hover:bg-primary/90 text-primary-foreground" pending={isPending}>
               <Sun className="mr-2 h-4 w-4" /> Predict Crop
             </SubmitButton>
           </CardFooter>
@@ -138,17 +138,18 @@ export function CropPredictionForm() {
       </Card>
 
       <div className="flex flex-col items-center justify-center space-y-4">
-         {formState.status === 'loading' && (
+         {/* Use isPending instead of formState.status === 'loading' */}
+         {isPending && (
              <div className="flex flex-col items-center text-muted-foreground">
                <Loader2 className="h-12 w-12 animate-spin text-primary" />
                <p className="mt-2 text-lg font-medium">Predicting...</p>
                <p className="text-sm">Analyzing parameters to find the best crop.</p>
              </div>
          )}
-         {showResult && formState.prediction && (
+         {showResult && formState.prediction && !isPending && ( // Ensure result is not shown while pending
            <PredictionResultCard prediction={formState.prediction} />
          )}
-         {!showResult && formState.status !== 'loading' && (
+         {!showResult && !isPending && ( // Ensure placeholder is not shown while pending
               <Card className="w-full h-full flex flex-col items-center justify-center bg-muted/50 border-dashed border-2 p-8 text-center">
                   <Leaf className="w-16 h-16 text-muted-foreground mb-4" />
                   <CardTitle className="text-xl text-muted-foreground">Awaiting Prediction</CardTitle>

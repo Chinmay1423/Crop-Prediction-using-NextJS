@@ -1,20 +1,20 @@
 // src/components/submit-button.tsx
 "use client";
 
-import { useFormStatus } from "react-dom";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 interface SubmitButtonProps extends ButtonProps {
   loadingText?: string;
+  pending: boolean; // Accept pending state as a prop
 }
 
 export function SubmitButton({
   children,
   loadingText = "Predicting...",
+  pending, // Destructure pending prop
   ...props
 }: SubmitButtonProps) {
-  const { pending } = useFormStatus();
 
   return (
     <Button {...props} type="submit" disabled={pending || props.disabled}>
