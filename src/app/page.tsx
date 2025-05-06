@@ -20,7 +20,7 @@ export default function Home() {
       <CropPredictionForm />
 
       <footer className="mt-16 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} CropWise. All rights reserved. Built with AI.
+        © {new Date().getFullYear()} CropWise. All rights reserved. Built by Chinmay.
       </footer>
     </main>
   );
